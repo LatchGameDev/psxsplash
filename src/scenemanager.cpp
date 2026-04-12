@@ -9,6 +9,7 @@
 #include "streq.hh"
 #include "luaapi.hh"
 #include "loadingscreen.hh"
+#include "random.hh"
 
 #include <psyqo/primitives/misc.hh>
 #include <psyqo/trigonometry.hh>
@@ -257,6 +258,8 @@ void psxsplash::SceneManager::InitializeScene(uint8_t* splashpackData, LoadingSc
     m_lastFrameTime = 0;
     m_dt12 = 4096;  // Default: 1.0 frame
 
+    m_random.seed(gpu.now());
+
     m_collisionSystem.init();
     
     for (size_t i = 0; i < sceneSetup.colliders.size(); i++) {
@@ -492,6 +495,8 @@ void psxsplash::SceneManager::GameTick(psyqo::GPU &gpu) {
         }
     }
     
+    m_random.multiplySeed(gpu.now()+1);
+
     // Save position BEFORE movement for collision detection
     psyqo::Vec3 oldPlayerPosition = m_playerPosition;
 

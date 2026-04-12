@@ -5,6 +5,7 @@
 #include <psyqo/trigonometry.hh>
 #include <psyqo/vector.hh>
 #include <psyqo/gpu.hh>
+#include "random.hh"
 
 #include "bvh.hh"
 #include "camera.hh"
@@ -22,6 +23,7 @@
 #include "animation.hh"
 #include "skinmesh.hh"
 #include "uisystem.hh"
+
 #ifdef PSXSPLASH_MEMOVERLAY
 #include "memoverlay.hh"
 #endif
@@ -124,6 +126,9 @@ class SceneManager {
 
     // Check and process pending scene load (called from GameTick)
     void processPendingSceneLoad();
+
+    Random m_random;
+    Random m_randomGenerator;
 
   private:
     psxsplash::Lua L;

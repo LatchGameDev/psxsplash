@@ -1,3 +1,4 @@
+#include "random.hh"
 #include "luaapi.hh"
 #include "scenemanager.hh"
 #include "gameobject.hh"
@@ -12,7 +13,6 @@
 #include <psyqo/trigonometry.hh>
 #include <psyqo/fixed-point.hh>
 #include "gtemath.hh"
-
 
 namespace psxsplash {
 
@@ -273,6 +273,29 @@ void LuaAPI::RegisterAll(psyqo::Lua& L, SceneManager* scene, CutscenePlayer* cut
     
     L.setGlobal("PSXMath");
     
+    // ========================================================================
+    // RANDOM API
+    // ========================================================================
+
+    L.newTable();  // Random table
+    
+    L.push(Random_Number);
+    L.setField(-2, "Number");
+    
+    L.push(Random_GeneratorNumber);
+    L.setField(-2, "GeneratorNumber");
+
+    L.push(Random_Range);
+    L.setField(-2, "Range");
+
+    L.push(Random_GeneratorRange);
+    L.setField(-2, "GeneratorRange");
+    
+    L.push(Random_GeneratorSeed);
+    L.setField(-2, "GeneratorSeed");
+    
+    L.setGlobal("Random");
+
     // ========================================================================
     // SCENE API
     // ========================================================================
@@ -1669,6 +1692,88 @@ int LuaAPI::Math_Max(lua_State* L) {
     
     lua.pushNumber(a > b ? a : b);
     return 1;
+}
+
+// ============================================================================
+// MATH API IMPLEMENTATION
+// ============================================================================
+
+int LuaAPI::Random_Number(lua_State* L) {
+    psyqo::Lua lua(L);
+    
+    if (!s_sceneManager || !lua.isNumber(1)) {
+        return 0;
+    }
+
+    uint32_t max = lua.toNumber(1);
+    uint32_t value = s_sceneManager->m_random.number(max)+1;
+
+    lua.pushNumber(value);
+    return 1;
+}
+
+int LuaAPI::Random_GeneratorNumber(lua_State* L) {
+    psyqo::Lua lua(L);
+    
+    if (!s_sceneManager || !lua.isNumber(1)) {
+        return 0;
+    }
+
+    uint32_t max = lua.toNumber(1);
+    uint32_t value = s_sceneManager->m_randomGenerator.number(max)+1;
+
+    lua.pushNumber(value);
+    return 1;
+}
+
+int LuaAPI::Random_Range(lua_State* L) {
+    psyqo::Lua lua(L);
+    
+    if (!s_sceneManager || !lua.isNumber(1) || !lua.isNumber(2)) {
+        return 0;
+    }
+    uint32_t min = lua.toNumber(1);
+    uint32_t max = lua.toNumber(2);
+    uint32_t difference = max - min;
+    
+    uint32_t value = s_sceneManager->m_random.number(difference+1) + min;
+
+    lua.pushNumber(value);
+    return 1;
+}
+
+int LuaAPI::Random_GeneratorRange(lua_State* L) {
+    psyqo::Lua lua(L);
+    
+    if (!s_sceneManager || !lua.isNumber(1) || !lua.isNumber(2)) {
+        return 0;
+    }
+    uint32_t min = lua.toNumber(1);
+    uint32_t max = lua.toNumber(2);
+    uint32_t difference = max - min;
+    
+    uint32_t value = s_sceneManager->m_randomGenerator.number(difference+1) + min;
+
+    lua.pushNumber(value);
+    return 1;
+}
+
+int LuaAPI::Random_GeneratorSeed(lua_State* L) {
+    psyqo::Lua lua(L);
+
+    if (!s_sceneManager || !lua.isNumber(1)) {
+        return 0;
+    }
+
+    uint32_t newSeed = static_cast<uint32_t>(lua.toNumber(1));
+
+    if(newSeed == 0){
+        newSeed = 108;
+    }
+    
+    s_sceneManager->m_randomGenerator.seed(newSeed);
+
+    return 0;
 }
 
 // ============================================================================
